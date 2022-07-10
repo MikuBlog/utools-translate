@@ -1,0 +1,36 @@
+{
+  "version": "1.0.0",
+  "pluginName": "懒人翻译小助手",
+  "homepage": "https://github.com/MikuBlog",
+  "logo": "logo.png",
+  "author": "xuanzai",
+  "preload": "preload.js",
+  "features": [
+    {
+      "code": "utools-translate",
+      "explain": "中英互翻，释放大脑！",
+      "cmds": [
+        "翻译",
+        "懒人翻译小助手"
+      ]
+    },
+    {
+      "code": "utools-translate-super",
+      "explain": "中英互翻，释放大脑！",
+      "cmds": [
+        {
+          "type": "over",
+          "label": "懒人翻译小助手"
+        }
+      ]
+    },
+    {
+      "code": "utools-config",
+      "explain": "配置key",
+      "cmds": [
+        "懒人翻译小助手配置",
+        "配置"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "name": "utools-bk",
+  "version": "1.0.0",
+  "description": "",
+  "main": "preload.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MikuBlog/utools-bk.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/MikuBlog/utools-bk/issues"
+  },
+  "homepage": "https://github.com/MikuBlog/utools-bk#readme",
+  "dependencies": {
+    "axios": "^0.27.2",
+    "md5": "^2.3.0",
+    "shelljs": "^0.8.5"
+  }
+}

@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="./assets/index.css">
+  <style>
+    body, html {
+      height: 100%;
+      padding: 0;
+      margin: 0;
+    }
+    .container {
+      padding: 16px;
+      box-sizing: border-box;
+    }
+    .tips {
+      position: relative;
+      margin-top: 16px;
+      padding-left: 16px;
+      color: #999;
+      font-size: 14px;
+    }
+    .link {
+      position: relative;
+      text-align: right;
+      margin-top: 16px;
+      color: rgb(82, 82, 205);
+      font-size: 14px;
+      cursor: pointer;
+    }
+    .button-box {
+      margin-top: 32px;
+    }
+  </style>
+  <title>懒人翻译小助手配置</title>
+</head>
+
+<body>
+  <div class="container weui-bottom-fixed-opr-page">
+    <div class="weui-bottom-fixed-opr-page__content">
+      <div class="weui-cells">
+        <label for="js_input1" class="weui-cell weui-cell_active" id="js_cell">
+          <div class="weui-cell__hd"><span class="weui-label">appkey</span></div>
+          <div class="weui-cell__bd weui-flex">
+            <input id="js_input1" class="weui-input" type="text" pattern="[0-9]*" placeholder="请输入appkey">
+          </div>
+        </label>
+        <label for="js_input2" class="weui-cell weui-cell_active">
+          <div class="weui-cell__hd"><span class="weui-label">appsecret</span></div>
+          <div class="weui-cell__bd weui-flex">
+            <input id="js_input2" class="weui-input" type="password" placeholder="请输入有道appsecret">
+          </div>
+        </label>
+      </div>
+      <div class="tips">
+        <p>
+          <p style="margin-bottom: 8px;">提示：</p>
+          <p>1.请登录有道翻译平台，获取appkey和appsecret</p>
+          <p>2.请输入appkey和appsecret</p>
+        </p>
+      </div>
+      <div class="link">如何获取appkey与appsecrect？</div>
+    </div>
+    <div class="weui-bottom-fixed-opr" id="js_opr">
+      <a href="javascript:;" role="button" class="weui-btn weui-btn_primary" id="save">保存</a>
+      <a href="javascript:;" role="button" class="weui-btn weui-btn_default" id="cancel">取消</a>
+    </div>
+  </div>
+  <script>
+    const record = utools.db.get('yd');
+    if (record) {
+      document.getElementById('js_input1').value = record.data.appkey;
+      document.getElementById('js_input2').value = record.data.appsecret;
+    }
+    // 保存
+    document.querySelector('#save').addEventListener('click', function() {
+      const appkey = document.querySelector('#js_input1').value;
+      const appsecret = document.querySelector('#js_input2').value;
+      if (!appkey || !appsecret) {
+        utools.ui.notification.show('请输入appkey和appsecret');
+        return;
+      }
+      if (record) {
+        utools.db.put({
+          _id: "yd",
+          data: {
+            appkey: appkey,
+            appsecret: appsecret
+          },
+          _rev: record._rev
+        });
+      } else {
+        utools.db.put({
+          _id: "yd",
+          data: {
+            appkey: appkey,
+            appsecret: appsecret
+          }
+        });
+      }
+      utools.showNotification('配置保存成功');
+      window.close();
+    });
+    // 取消
+    document.querySelector('#cancel').addEventListener('click', function() {
+      window.close();
+    });
+    // 点击链接
+    document.querySelector('.link').addEventListener('click', () => {
+      utools.copyText('https://github.com/wensonsmith/YoudaoTranslator/wiki/%E8%8E%B7%E5%8F%96%E6%9C%89%E9%81%93%E7%BF%BB%E8%AF%91-Key-%E4%B8%8E-Secret');
+      utools.showNotification('已复制文档链接');
+    });
+  </script>
+</body>
+
+</html>
