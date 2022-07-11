@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    .container {
+      padding: 16px;
+    }
+    .translate-box {
+      display: flex;
+      font-size: 18px;
+      margin-bottom: 32px;
+    }
+    .label {
+      min-width: 100px;
+    }
+  </style>
+  <title>翻译详情</title>
+</head>
+<body>
+  <div class="container">
+    <div class="translate-box">
+      <div class="label">翻译内容：</div>
+      <div class="value"></div>
+    </div>
+    <div class="translate-box">
+      <div class="label">翻译结果：</div>
+      <div class="value"></div>
+    </div>
+  </div>
+  <script>
+    const { title, searchWord, isChinese } = utools.db.get('translate-record').data;
+    document.querySelector('.translate-box:first-child .value').innerText = searchWord;
+    document.querySelector('.translate-box:last-child .value').innerText = title;
+  </script>
+</body>
+</html>

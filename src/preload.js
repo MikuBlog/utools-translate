@@ -1,9 +1,12 @@
-const axios = require('axios');
-const md5 = require('md5');
-const { execSync } = require('child_process');
+const axios = require("axios");
+const md5 = require("md5");
+const { execSync } = require("child_process");
 
 let appkey = null;
 let appsecret = null;
+
+const normalIcon = "./logo.png";
+const pronounceIcon = "./assets/laba.png";
 
 // 错误验证
 const messages = {
@@ -39,93 +42,141 @@ function getUrl(word) {
    return "https://openapi.youdao.com/api?" + params.toString();
 }
 
+// 判断输入项是否为中文
 function detectChinese(word) {
    return /^[\u4e00-\u9fa5]+$/.test(word);
 }
 
+// 处理用户输入
 function handleOutput(searchWord, callbackSetList = () => { }) {
-   callbackSetList([{
-      title: '正在查询中，请稍后',
-   }])
+   callbackSetList([
+      {
+         title: "正在查询中，请稍后",
+      },
+   ]);
    const isChinese = detectChinese(searchWord);
    axios({
       url: getUrl(searchWord),
-      method: 'get',
-   }).then(res => {
-      const { translation, basic, web, errorCode } = res.data;
-      if (errorCode === '0') {
-         const listenerWord = isChinese ? translation[0] : searchWord;
-         const isWindows = utools.isWindows();
-         const description = `-----回车听发音${isWindows ? '(window暂不支持)' : ''}-----`;
-         const list = translation.map(val => ({
-            title: val,
-            description: searchWord,
-            icon: './logo.png',
-         }))
-         if (basic && basic["us-phonetic"]) {
-            list.push({
-               title: `[美：${basic["us-phonetic"]}] [英：${basic["uk-phonetic"]}]`,
-               description,
-               icon: './logo.png',
-               listenerWord,
-               listener: !isWindows,
-            });
-         } else if (basic && basic["phonetic"]) {
-            list.push({
-               title: listenerWord,
-               description,
-               icon: './logo.png',
-               listenerWord,
-               listener: !isWindows,
-            });
-         } else {
-            list.push({
-               title: listenerWord,
-               description,
-               icon: './logo.png',
-               listenerWord,
-               listener: !isWindows,
-            });
-         }
-         basic && list.push(...basic.explains.map(val => ({
-            title: val,
-            description: searchWord,
-            icon: './logo.png',
-         })));
-         web && list.push(...web.map(val => ({
-            title: val.value.join('，'),
-            description: val.key,
-            icon: './logo.png',
-         })));
-         callbackSetList(list)
-      } else if (errorCode === '108') {
-         callbackSetList([{
-            title: messages[errorCode],
-            description: '请重新配置appkey与appsecret',
-            icon: './logo.png',
-            redirect: '懒人翻译小助手配置',
-         }]);
-      } else {
-         callbackSetList([{
-            title: messages[errorCode],
-         }]);
-      }
-   }).catch(err => {
-      callbackSetList([{
-         title: err.toString(),
-         description: '回车前往百度搜索',
-         url: `https://www.baidu.com/s?wd=${searchWord}`,
-      }])
+      method: "get",
    })
+      .then((res) => {
+         const { translation, basic, web, errorCode } = res.data;
+         if (errorCode === "0") {
+            const commonObj = {
+               searchWord,
+               isChinese,
+               icon: normalIcon,
+            }
+            const list = translation.map((val) => ({
+               title: val,
+               description: searchWord,
+               ...commonObj,
+            }));
+            if (basic && basic["us-phonetic"]) {
+               list.push({
+                  title: `[美：${basic["us-phonetic"]}] [英：${basic["uk-phonetic"]}]`,
+                  description: searchWord,
+                  ...commonObj,
+               });
+            } else if (basic && basic["phonetic"]) {
+               list.push({
+                  title: basic["phonetic"],
+                  description: translation[0],
+                  ...commonObj,
+               });
+            }
+            basic &&
+               list.push(
+                  ...basic.explains.map((val) => ({
+                     title: val,
+                     description: searchWord,
+                     ...commonObj,
+                  }))
+               );
+            web &&
+               list.push(
+                  ...web.map((val) => ({
+                     title: val.value.join("，"),
+                     description: val.key,
+                     ...commonObj,
+                  }))
+               );
+            callbackSetList(list);
+         } else if (errorCode === "108") {
+            callbackSetList([
+               {
+                  title: messages[errorCode],
+                  description: "请重新配置appkey与appsecret",
+                  icon: "./logo.png",
+                  redirect: "懒人翻译小助手配置",
+               },
+            ]);
+         } else {
+            callbackSetList([
+               {
+                  title: messages[errorCode],
+               },
+            ]);
+         }
+      })
+      .catch((err) => {
+         callbackSetList([
+            {
+               title: err.toString(),
+               description: "回车前往百度搜索",
+               url: `https://www.baidu.com/s?wd=${searchWord}`,
+            },
+         ]);
+      });
 }
 
-function handleSelect(itemData) {
-   const { title, listenerWord, listener, url, redirect } = itemData;
+// 处理打开详情的情况
+function openDetail(item) {
+   const record = utools.db.get('translate-record');
+   if (record) {
+      utools.db.put({
+         _id: 'translate-record',
+         data: item,
+         _rev: record._rev,
+      })
+   } else {
+      utools.db.put({
+         _id: 'translate-record',
+         data: item,
+      })
+   }
+   const ubWindow = utools.createBrowserWindow(
+      "translate.html",
+      {
+         show: false,
+         width: 600,
+         height: 480,
+         title: "翻译",
+         webPreferences: {
+            preload: "preload.js",
+         },
+      },
+      () => {
+         // 显示
+         ubWindow.show();
+         // 置顶
+         ubWindow.setAlwaysOnTop(true);
+      }
+   );
+}
+
+// 复制到剪贴板
+function copyToClipboard(item) {
    window.utools.hideMainWindow();
-   if (listener) {
-      execSync(`/bin/bash
+   utools.copyText(item.title);
+   window.utools.outPlugin();
+}
+
+// 发音
+function pronounce(description) {
+   execSync(`/bin/bash
       cd $TMPDIR
-      query="${listenerWord}"
+      query="${description}"
       voice="youdao-\${query}.mp3"
       
       echo say: "$voice" >&2
@@ -135,31 +186,66 @@ function handleSelect(itemData) {
       fi
       
       afplay "$voice"`);
-   } else if (url) {
-      window.utools.hideMainWindow()
-      require('electron').shell.openExternal(url)
-      // 保证网页正常跳转再关闭插件
-      setTimeout(() => {
-         window.utools.outPlugin()
-      }, 500);
-   } else if (redirect) {
-      return utools.redirect('懒人翻译小助手配置');
-   } else {
-      utools.copyText(title);
-   }
-   window.utools.outPlugin();
 }
 
+// 选择翻译项
+function handleSelect(itemData, callbackSetList) {
+   const { title, description, action, isChinese, searchWord, item } = itemData;
+   if (action) {
+      switch (action) {
+         case "copy":
+            copyToClipboard(item);
+            break;
+         case "detail":
+            openDetail(item);
+            break;
+         case "say":
+            pronounce(description);
+            break;
+         case "back":
+            handleOutput(searchWord, callbackSetList);
+            break;
+      }
+   } else {
+      const list = [
+         {
+            item: itemData,
+            ...itemData,
+            title: "复制内容",
+            description: title,
+            action: "copy",
+         },
+         {
+            item: itemData,
+            ...itemData,
+            title: "打开详情",
+            description: title,
+            action: "detail",
+         },
+      ];
+      !utools.isWindows() && list.push({ item: itemData, ...itemData, title: "听发音", description: isChinese ? title : description, action: "say", icon: pronounceIcon });
+      list.push({
+         item: itemData,
+         ...itemData,
+         title: "返回",
+         description: '返回上一步操作',
+         action: 'back',
+      });
+      callbackSetList(list);
+   }
+}
+
+// 初始化appkey与appsecret
 function initAppConfig() {
-   const record = utools.db.get('yd');
+   const record = utools.db.get("yd");
    if (record) {
       appkey = record.data.appkey;
       appsecret = record.data.appsecret;
       return true;
    } else {
-      utools.showNotification('请先配置appkey和appsecrect');
+      utools.showNotification("请先配置appkey和appsecrect");
       setTimeout(() => {
-         utools.redirect('懒人翻译小助手配置');
+         utools.redirect("懒人翻译小助手配置");
       }, 100);
       return false;
    }
@@ -176,10 +262,10 @@ window.exports = {
             handleOutput(searchWord, callbackSetList);
          },
          // 用户选择列表中某个条目时被调用
-         select: (action, itemData) => {
-            handleSelect(itemData);
+         select: (action, itemData, callbackSetList) => {
+            handleSelect(itemData, callbackSetList);
          },
-         placeholder: '请输入要翻译的内容',
+         placeholder: "请输入要翻译的内容",
       },
    },
    "utools-translate-super": {
@@ -198,31 +284,35 @@ window.exports = {
             handleOutput(searchWord, callbackSetList);
          },
          // 用户选择列表中某个条目时被调用
-         select: (action, itemData) => {
-            handleSelect(itemData);
+         select: (action, itemData, callbackSetList) => {
+            handleSelect(itemData, callbackSetList);
          },
-         placeholder: '请输入要翻译的内容',
+         placeholder: "请输入要翻译的内容",
       },
    },
    "utools-config": {
-      mode: 'list',
+      mode: "list",
       args: {
          enter: () => {
-            const ubWindow = utools.createBrowserWindow('config.html', {
-               show: false,
-               width: 600,
-               height: 480,
-               title: '配置窗口',
-               webPreferences: {
-                  preload: 'preload.js'
+            const ubWindow = utools.createBrowserWindow(
+               "config.html",
+               {
+                  show: false,
+                  width: 600,
+                  height: 480,
+                  title: "配置窗口",
+                  webPreferences: {
+                     preload: "preload.js",
+                  },
+               },
+               () => {
+                  // 显示
+                  ubWindow.show();
+                  // 置顶
+                  ubWindow.setAlwaysOnTop(true);
                }
-            }, () => {
-               // 显示
-               ubWindow.show()
-               // 置顶
-               ubWindow.setAlwaysOnTop(true);
-            });
+            );
          },
       },
-   }
-}
+   },
+};
