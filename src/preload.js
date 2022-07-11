@@ -190,7 +190,10 @@ function pronounce(description) {
 
 // 选择翻译项
 function handleSelect(itemData, callbackSetList) {
-   const { title, description, action, isChinese, searchWord, item } = itemData;
+   const { title, description, action, redirect, isChinese, searchWord, item } = itemData;
+   if (redirect) {
+      return utools.redirect(redirect);
+   }
    if (action) {
       switch (action) {
          case "copy":
