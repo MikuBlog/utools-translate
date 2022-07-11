@@ -313,6 +313,8 @@ window.exports = {
                   ubWindow.show();
                   // 置顶
                   ubWindow.setAlwaysOnTop(true);
+                  console.log(ubWindow.on);
+                  // ubWindow.addEventListener("close", () => {})
                }
             );
          },
