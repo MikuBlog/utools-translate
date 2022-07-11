@@ -146,7 +146,7 @@ function openDetail(item) {
       })
    }
    const ubWindow = utools.createBrowserWindow(
-      "translate.html",
+      "./template/translate.html",
       {
          show: false,
          width: 600,
@@ -295,7 +295,7 @@ window.exports = {
       args: {
          enter: () => {
             const ubWindow = utools.createBrowserWindow(
-               "config.html",
+               "./template/config.html",
                {
                   show: false,
                   width: 600,
