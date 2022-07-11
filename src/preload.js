@@ -1,6 +1,6 @@
 const axios = require("axios");
 const md5 = require("md5");
-const { execSync } = require("child_process");
+const { exec } = require("child_process");
 
 let appkey = null;
 let appsecret = null;
@@ -177,7 +177,7 @@ function copyToClipboard(item) {
 
 // 发音
 function pronounce(description) {
-   execSync(`/bin/bash
+   exec(`
       cd $TMPDIR
       query="${description}"
       voice="youdao-\${query}.mp3"
