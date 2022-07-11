@@ -7,6 +7,9 @@ let appsecret = null;
 
 const normalIcon = "./logo.png";
 const pronounceIcon = "./assets/laba.png";
+const backIcon = './assets/back.png';
+const copyIcon = './assets/copy.png';
+const detailIcon = './assets/detail.png';
 
 // 错误验证
 const messages = {
@@ -215,6 +218,7 @@ function handleSelect(itemData, callbackSetList) {
             item: itemData,
             ...itemData,
             title: "复制内容",
+            icon: copyIcon,
             description: title,
             action: "copy",
          },
@@ -222,6 +226,7 @@ function handleSelect(itemData, callbackSetList) {
             item: itemData,
             ...itemData,
             title: "打开详情",
+            icon: detailIcon,
             description: title,
             action: "detail",
          },
@@ -232,6 +237,7 @@ function handleSelect(itemData, callbackSetList) {
          ...itemData,
          title: "返回",
          description: '返回上一步操作',
+         icon: backIcon,
          action: 'back',
       });
       callbackSetList(list);
